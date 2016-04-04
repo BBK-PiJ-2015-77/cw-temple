@@ -1,9 +1,15 @@
 package student;
 
+import java.util.Collection;
+import java.util.List;
+
 import game.EscapeState;
 import game.ExplorationState;
+import game.NodeStatus;
 
 public class Explorer {
+
+    private List<NodeStatus> currentNeighbours;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -36,7 +42,36 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        //TODO:
+
+        currentNeighbours = state.getNeighbours();
+        /**
+         * Get neighbours
+         * check which ones can be moved into
+         * check which ones are nearer to the orb
+         * move to that location
+         */
+        //state.moveTo();
+        /**
+         * Return the unique identifier associated with your current location.
+         */
+
+        //state.getCurrentLocation();
+
+
+        /**
+         * Return your current distance along the grid (NOT THE GRAPH) from the target.
+         */
+
+        //state.getDistanceToTarget();
+
+        /**
+         * To get information about the current state, use functions
+         * getCurrentLocation(),
+         * getNeighbours(), and
+         * getDistanceToTarget()
+         * in ExplorationState.
+         * You know you are standing on the orb when getDistanceToTarget() is 0.
+         */
     }
 
     /**
