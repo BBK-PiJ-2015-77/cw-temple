@@ -47,7 +47,7 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
 
-        currentNeighbours = state.getNeighbours();
+
         /**
         Iterator itr = currentNeighbours.iterator();
         while(itr.hasNext()){
@@ -60,13 +60,22 @@ public class Explorer {
 
 
         //This is a list of the neighbouring NodeStatus'
-        currentNeighboursList = new ArrayList<>();
-        for ( NodeStatus tempNode : currentNeighbours) {
-            currentNeighboursList.add(tempNode);
-        }
+        while (!(state.getDistanceToTarget()==0)) {
+            currentNeighbours = state.getNeighbours();
+            currentNeighboursList = new ArrayList<>();
+            for (NodeStatus tempNode : currentNeighbours) {
+                currentNeighboursList.add(tempNode);
+            }
 
-        nearestNode = currentNeighboursList.get(0);
-        state.moveTo(nearestNode.getId());
+            nearestNode = currentNeighboursList.get(0);
+            for (NodeStatus tempNode : currentNeighboursList) {
+                if (nearestNode.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
+                    nearestNode = tempNode;
+                }
+            }
+
+            state.moveTo(nearestNode.getId());
+        }
 
         /**
          * Get neighbours
