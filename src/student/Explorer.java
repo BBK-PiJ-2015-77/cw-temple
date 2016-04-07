@@ -1,7 +1,9 @@
 package student;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Iterator;
 
 import game.EscapeState;
 import game.ExplorationState;
@@ -9,7 +11,9 @@ import game.NodeStatus;
 
 public class Explorer {
 
-    private List<NodeStatus> currentNeighbours;
+    private Collection<NodeStatus> currentNeighbours;
+    private List<NodeStatus> currentNeighboursList;
+    private NodeStatus nearestNode;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -44,6 +48,26 @@ public class Explorer {
     public void explore(ExplorationState state) {
 
         currentNeighbours = state.getNeighbours();
+        /**
+        Iterator itr = currentNeighbours.iterator();
+        while(itr.hasNext()){
+            Object ns = itr.next();
+            //cast ns to NodeStatus
+            currentNeighboursList.add((NodeStatus) ns);
+        }
+        */
+
+
+
+        //This is a list of the neighbouring NodeStatus'
+        currentNeighboursList = new ArrayList<>();
+        for ( NodeStatus tempNode : currentNeighbours) {
+            currentNeighboursList.add(tempNode);
+        }
+
+        nearestNode = currentNeighboursList.get(0);
+        state.moveTo(nearestNode.getId());
+
         /**
          * Get neighbours
          * check which ones can be moved into
