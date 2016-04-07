@@ -14,7 +14,7 @@ public class Explorer {
     private Collection<NodeStatus> currentNeighbours;
     private List<NodeStatus> currentNeighboursList;
     private NodeStatus nearestNode;
-    private List<NodeStatus> visitedNodes;
+    private List<Long> visitedNodes;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -71,14 +71,14 @@ public class Explorer {
             nearestNode = currentNeighboursList.get(0);
             for (NodeStatus tempNode : currentNeighboursList) {
                 if (nearestNode.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
-                    if(!visitedNodes.contains(tempNode)) {
+                    if(!visitedNodes.contains(tempNode.getId())) {
                         nearestNode = tempNode;
                     }
                 }
             }
 
             state.moveTo(nearestNode.getId());
-            visitedNodes.add(nearestNode);
+            visitedNodes.add(state.getCurrentLocation());
         }
 
         //make a list of nodes visited, then don't visit again
