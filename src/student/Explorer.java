@@ -60,6 +60,14 @@ public class Explorer {
 
         visitedNodes = new ArrayList<>();
 
+        currentNeighbours = state.getNeighbours();
+        currentNeighboursList = new ArrayList<>();
+        for (NodeStatus tempNode : currentNeighbours) {
+            currentNeighboursList.add(tempNode);
+        }
+
+        nearestNode = currentNeighboursList.get(0);
+
         //This is a list of the neighbouring NodeStatus'
         while (!(state.getDistanceToTarget()==0)) {
             currentNeighbours = state.getNeighbours();
@@ -68,20 +76,27 @@ public class Explorer {
                 currentNeighboursList.add(tempNode);
             }
 
-            nearestNode = currentNeighboursList.get(0);
+            //I think this is causing problems. try and set it to the furthest node away as possible
+            /**
             for (NodeStatus tempNode : currentNeighboursList) {
                 if (nearestNode.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
                     if(!visitedNodes.contains(tempNode.getId())) {
                         nearestNode = tempNode;
+                    } else {
+                        currentNeighboursList.remove(tempNode);
                     }
                 }
             }
-
+            */
+            returnNearest(currentNeighboursList,nearestNode);
             state.moveTo(nearestNode.getId());
             visitedNodes.add(state.getCurrentLocation());
         }
 
         //make a list of nodes visited, then don't visit again
+
+        //need a method to get nearestNode
+
 
         /**
          * Get neighbours
@@ -138,5 +153,20 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
+    }
+
+
+    //This method doesn't work because sometimes you have to move into spaces that aren't nearer
+    private void returnNearest(List<NodeStatus> lns, NodeStatus ns) {
+        for (NodeStatus tempNode : lns) {
+            if (ns.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
+                if (!visitedNodes.contains(tempNode.getId())) {
+                    nearestNode = tempNode;
+                } else {
+                    lns.remove(tempNode);
+                    returnNearest(lns, ns);
+                }
+            }
+        }
     }
 }
