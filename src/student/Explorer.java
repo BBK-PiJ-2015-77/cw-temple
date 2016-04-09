@@ -2,8 +2,9 @@ package student;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Iterator;
+import java.util.Comparator;
 
 import game.EscapeState;
 import game.ExplorationState;
@@ -13,6 +14,7 @@ public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
     private List<NodeStatus> currentNeighboursList;
+    private List<NodeStatus> route;
     private NodeStatus nearestNode;
     private List<Long> visitedNodes;
 
@@ -47,85 +49,68 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-
-
-        /**
-        Iterator itr = currentNeighbours.iterator();
-        while(itr.hasNext()){
-            Object ns = itr.next();
-            //cast ns to NodeStatus
-            currentNeighboursList.add((NodeStatus) ns);
-        }
-        */
-
-        visitedNodes = new ArrayList<>();
-
-        currentNeighbours = state.getNeighbours();
         currentNeighboursList = new ArrayList<>();
-        for (NodeStatus tempNode : currentNeighbours) {
-            currentNeighboursList.add(tempNode);
-        }
+        visitedNodes = new ArrayList<>();
+        route = new ArrayList<>();
 
-        nearestNode = currentNeighboursList.get(0);
-
-        //This is a list of the neighbouring NodeStatus'
         while (!(state.getDistanceToTarget()==0)) {
             currentNeighbours = state.getNeighbours();
-            currentNeighboursList = new ArrayList<>();
+
             for (NodeStatus tempNode : currentNeighbours) {
                 currentNeighboursList.add(tempNode);
             }
 
-            //I think this is causing problems. try and set it to the furthest node away as possible
-            /**
-            for (NodeStatus tempNode : currentNeighboursList) {
-                if (nearestNode.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
-                    if(!visitedNodes.contains(tempNode.getId())) {
-                        nearestNode = tempNode;
+            visitedNodes.add(state.getCurrentLocation());
+
+            System.out.println("Current node: " + state.getCurrentLocation());
+
+            Collections.sort(currentNeighboursList, new Comparator<NodeStatus>() {
+                public int compare (NodeStatus o1, NodeStatus o2) {
+                    if (o1.getDistanceToTarget() == o2.getDistanceToTarget()) {
+                        return 0;
                     } else {
-                        currentNeighboursList.remove(tempNode);
+                        return o1.getDistanceToTarget() < o2.getDistanceToTarget() ? -1 : 1;
+                    }
+                }
+            });
+
+            System.out.println("Before:");
+            for (NodeStatus ns : currentNeighboursList) {
+                System.out.println(ns.getId());
+            }
+            System.out.println("--");
+
+            for (Long id : visitedNodes) {
+                for (NodeStatus ns : currentNeighboursList) {
+                    if(!id.equals(ns.getId())) {
+                        route.add(ns);
                     }
                 }
             }
-            */
-            returnNearest(currentNeighboursList,nearestNode);
+
+            /**
+            for (NodeStatus ns : currentNeighboursList) {
+                for (Long id : visitedNodes) {
+            }
+             */
+
+
+            System.out.println("After removing previously visited:");
+            for (NodeStatus ns : route) {
+                System.out.println(ns.getId());
+            }
+            System.out.println("...");
+
+            nearestNode = route.get(0);
+
+            if (nearestNode.getId() == state.getCurrentLocation()) {
+                nearestNode = route.get(1);
+            }
+
             state.moveTo(nearestNode.getId());
-            visitedNodes.add(state.getCurrentLocation());
+            currentNeighboursList.clear();
+
         }
-
-        //make a list of nodes visited, then don't visit again
-
-        //need a method to get nearestNode
-
-
-        /**
-         * Get neighbours
-         * check which ones can be moved into
-         * check which ones are nearer to the orb
-         * move to that location
-         */
-        //state.moveTo();
-        /**
-         * Return the unique identifier associated with your current location.
-         */
-
-        //state.getCurrentLocation();
-
-
-        /**
-         * Return your current distance along the grid (NOT THE GRAPH) from the target.
-         */
-
-        //state.getDistanceToTarget();
-
-        /**
-         * To get information about the current state, use functions
-         * getCurrentLocation(),
-         * getNeighbours(), and
-         * getDistanceToTarget()
-         * in ExplorationState.
-         * You know you are standing on the orb when getDistanceToTarget() is 0.
-         */
     }
 
     /**
@@ -158,15 +143,27 @@ public class Explorer {
 
     //This method doesn't work because sometimes you have to move into spaces that aren't nearer
     private void returnNearest(List<NodeStatus> lns, NodeStatus ns) {
+        Collections.sort(lns);
         for (NodeStatus tempNode : lns) {
-            if (ns.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
-                if (!visitedNodes.contains(tempNode.getId())) {
-                    nearestNode = tempNode;
-                } else {
-                    lns.remove(tempNode);
-                    returnNearest(lns, ns);
-                }
+            System.out.println(tempNode.getDistanceToTarget());
+        }
+        System.out.println("...");
+        boolean match = false;
+
+        for (NodeStatus tempNode : lns) {
+            if (visitedNodes.contains(tempNode.getId())) {
+                lns.remove(tempNode);
+            } else  if (ns.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
+                nearestNode = tempNode;
+                match = true;
             }
         }
+
+        if(!match) {
+            nearestNode = lns.get(0);
+        }
+
     }
+
+
 }
