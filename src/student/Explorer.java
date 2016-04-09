@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Comparator;
 
 import game.EscapeState;
@@ -14,9 +16,10 @@ public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
     private List<NodeStatus> currentNeighboursList;
-    private List<NodeStatus> route;
+    private Set<NodeStatus> route;
     private NodeStatus nearestNode;
-    private List<Long> visitedNodes;
+    private Set<Long> visitedNodes;
+    private int dtt;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -50,8 +53,9 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
         currentNeighboursList = new ArrayList<>();
-        visitedNodes = new ArrayList<>();
-        route = new ArrayList<>();
+        visitedNodes = new HashSet<>();
+        route = new HashSet<>();
+        dtt = state.getDistanceToTarget();
 
         while (!(state.getDistanceToTarget()==0)) {
             currentNeighbours = state.getNeighbours();
@@ -78,13 +82,15 @@ public class Explorer {
             for (NodeStatus ns : currentNeighboursList) {
                 System.out.println(ns.getId());
             }
-            System.out.println("--");
 
-            for (Long id : visitedNodes) {
-                for (NodeStatus ns : currentNeighboursList) {
-                    if(!id.equals(ns.getId())) {
-                        route.add(ns);
-                    }
+
+            for (NodeStatus ns : currentNeighboursList) {
+                if(ns.getDistanceToTarget() < dtt && !visitedNodes.contains(ns.getId())) {
+                    nearestNode = ns;
+                    dtt = ns.getDistanceToTarget();
+                } else if (!visitedNodes.contains(ns.getId())) {
+                    nearestNode = ns;
+                    dtt = ns.getDistanceToTarget();
                 }
             }
 
@@ -94,18 +100,14 @@ public class Explorer {
             }
              */
 
-
-            System.out.println("After removing previously visited:");
-            for (NodeStatus ns : route) {
-                System.out.println(ns.getId());
+            System.out.println("Visited Nodes:");
+            for (Long id : visitedNodes) {
+                System.out.print(id + ", \n");
             }
-            System.out.println("...");
 
-            nearestNode = route.get(0);
+            System.out.println("Moving to node " + nearestNode.getId());
 
-            if (nearestNode.getId() == state.getCurrentLocation()) {
-                nearestNode = route.get(1);
-            }
+            System.out.println("--");
 
             state.moveTo(nearestNode.getId());
             currentNeighboursList.clear();
