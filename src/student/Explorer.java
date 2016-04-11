@@ -56,11 +56,14 @@ public class Explorer {
     public void explore(ExplorationState state) {
 
         Deque<Long> stack = new ArrayDeque<>();
-        stack.add(state.getCurrentLocation());
+        stack.push(state.getCurrentLocation());
 
         currentNeighbourIDs = new ArrayList<>();
+        visitedNodes = new HashSet<>();
+        visitedNodes.add(state.getCurrentLocation());
+        System.out.println("The start node is: " + state.getCurrentLocation());
 
-        while(!state.getDistanceToTarget() == 0) {
+        while(state.getDistanceToTarget() != 0) {
 
             currentNeighbours = state.getNeighbours();
 
@@ -71,10 +74,31 @@ public class Explorer {
             Collections.sort(currentNeighbourIDs);
 
             //just checking that they are actually sorted
+            //sorted by id value, not by distance!
             for (Long id : currentNeighbourIDs) {
                 System.out.print(id + ", ");
             }
             System.out.println(" ");
+
+            for (Long id : currentNeighbourIDs) {
+                if(!visitedNodes.contains(id)) {
+                    stack.push(id);
+                }
+
+            }
+
+            if (visitedNodes.contains(stack.getFirst())) {
+                stack.pop();
+            }
+
+            System.out.println("Stack contents:");
+            for(Long id : stack) {
+                System.out.println(id);
+            }
+
+            state.moveTo(stack.getFirst());
+            currentNeighbourIDs.clear();
+            visitedNodes.add(state.getCurrentLocation());
 
 
 
