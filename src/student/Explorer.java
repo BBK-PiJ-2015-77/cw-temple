@@ -17,7 +17,7 @@ import game.NodeStatus;
 public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
-    private List<Long> currentNeighbourIDs;
+    private List<NodeStatus> currentNeighboursList;
     private Set<NodeStatus> route;
     private NodeStatus nearestNode;
     private Set<Long> visitedNodes;
@@ -58,7 +58,7 @@ public class Explorer {
         Deque<Long> stack = new ArrayDeque<>();
         stack.push(state.getCurrentLocation());
 
-        currentNeighbourIDs = new ArrayList<>();
+        currentNeighboursList = new ArrayList<>();
         visitedNodes = new HashSet<>();
         visitedNodes.add(state.getCurrentLocation());
         System.out.println("The start node is: " + state.getCurrentLocation());
@@ -68,21 +68,29 @@ public class Explorer {
             currentNeighbours = state.getNeighbours();
 
             for (NodeStatus tempNode : currentNeighbours) {
-                currentNeighbourIDs.add(tempNode.getId());
+                currentNeighboursList.add(tempNode);
             }
 
-            Collections.sort(currentNeighbourIDs);
+            Collections.sort(currentNeighboursList, new Comparator<NodeStatus>() {
+                public int compare (NodeStatus o1, NodeStatus o2) {
+                    if (o1.getDistanceToTarget() == o2.getDistanceToTarget()) {
+                        return 0;
+                    } else {
+                        return o1.getDistanceToTarget() < o2.getDistanceToTarget() ? -1 : 1;
+                    }
+                }
+            });
 
             //just checking that they are actually sorted
             //sorted by id value, not by distance!
-            for (Long id : currentNeighbourIDs) {
-                System.out.print(id + ", ");
+            for (NodeStatus ns : currentNeighboursList) {
+                System.out.print(ns.getId() + ", ");
             }
             System.out.println(" ");
 
-            for (Long id : currentNeighbourIDs) {
-                if(!visitedNodes.contains(id)) {
-                    stack.push(id);
+            for (NodeStatus ns : currentNeighboursList) {
+                if(!visitedNodes.contains(ns.getId())) {
+                    stack.push(ns.getId());
                 }
 
             }
@@ -97,8 +105,12 @@ public class Explorer {
             }
 
             state.moveTo(stack.getFirst());
-            currentNeighbourIDs.clear();
+            currentNeighboursList.clear();
             visitedNodes.add(state.getCurrentLocation());
+            System.out.println("Visited Nodes: ");
+            for (long id : visitedNodes) {
+                System.out.println(id);
+            }
 
 
 
