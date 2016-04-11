@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Deque;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Comparator;
 
@@ -15,7 +17,7 @@ import game.NodeStatus;
 public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
-    private List<NodeStatus> currentNeighboursList;
+    private List<Long> currentNeighbourIDs;
     private Set<NodeStatus> route;
     private NodeStatus nearestNode;
     private Set<Long> visitedNodes;
@@ -52,65 +54,29 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        currentNeighboursList = new ArrayList<>();
-        visitedNodes = new HashSet<>();
-        route = new HashSet<>();
-        dtt = state.getDistanceToTarget();
 
-        while (!(state.getDistanceToTarget()==0)) {
+        Deque<Long> stack = new ArrayDeque<>();
+        stack.add(state.getCurrentLocation());
+
+        currentNeighbourIDs = new ArrayList<>();
+
+        while(!state.getDistanceToTarget() == 0) {
+
             currentNeighbours = state.getNeighbours();
 
             for (NodeStatus tempNode : currentNeighbours) {
-                currentNeighboursList.add(tempNode);
+                currentNeighbourIDs.add(tempNode.getId());
             }
 
-            visitedNodes.add(state.getCurrentLocation());
+            Collections.sort(currentNeighbourIDs);
 
-            System.out.println("Current node: " + state.getCurrentLocation());
-
-            Collections.sort(currentNeighboursList, new Comparator<NodeStatus>() {
-                public int compare (NodeStatus o1, NodeStatus o2) {
-                    if (o1.getDistanceToTarget() == o2.getDistanceToTarget()) {
-                        return 0;
-                    } else {
-                        return o1.getDistanceToTarget() < o2.getDistanceToTarget() ? -1 : 1;
-                    }
-                }
-            });
-
-            System.out.println("Before:");
-            for (NodeStatus ns : currentNeighboursList) {
-                System.out.println(ns.getId());
+            //just checking that they are actually sorted
+            for (Long id : currentNeighbourIDs) {
+                System.out.print(id + ", ");
             }
+            System.out.println(" ");
 
 
-            for (NodeStatus ns : currentNeighboursList) {
-                if(ns.getDistanceToTarget() < dtt && !visitedNodes.contains(ns.getId())) {
-                    nearestNode = ns;
-                    dtt = ns.getDistanceToTarget();
-                } else if (!visitedNodes.contains(ns.getId())) {
-                    nearestNode = ns;
-                    dtt = ns.getDistanceToTarget();
-                }
-            }
-
-            /**
-            for (NodeStatus ns : currentNeighboursList) {
-                for (Long id : visitedNodes) {
-            }
-             */
-
-            System.out.println("Visited Nodes:");
-            for (Long id : visitedNodes) {
-                System.out.print(id + ", \n");
-            }
-
-            System.out.println("Moving to node " + nearestNode.getId());
-
-            System.out.println("--");
-
-            state.moveTo(nearestNode.getId());
-            currentNeighboursList.clear();
 
         }
     }
