@@ -18,9 +18,10 @@ public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
     private List<NodeStatus> currentNeighboursList;
-    private Set<NodeStatus> route;
+
     private NodeStatus nearestNode;
     private Set<Long> visitedNodes;
+    private List<Long> route;
     private int dtt;
 
     /**
@@ -57,10 +58,13 @@ public class Explorer {
 
         Deque<Long> stack = new ArrayDeque<>();
         stack.push(state.getCurrentLocation());
-
+        Long previousNode = null;
         currentNeighboursList = new ArrayList<>();
         visitedNodes = new HashSet<>();
+        route = new ArrayList<>();
+
         visitedNodes.add(state.getCurrentLocation());
+        route.add(state.getCurrentLocation());
         System.out.println("The start node is: " + state.getCurrentLocation());
 
         while(state.getDistanceToTarget() != 0) {
@@ -88,30 +92,51 @@ public class Explorer {
             }
             System.out.println(" ");
 
+            boolean newNeighbours = false;
             for (NodeStatus ns : currentNeighboursList) {
-                if(!visitedNodes.contains(ns.getId())) {
-                    stack.push(ns.getId());
+                if (!visitedNodes.contains(ns.getId())) {
+                    newNeighbours = true;
+                    state.moveTo(ns.getId());
+                    currentNeighboursList.clear();
+                    visitedNodes.add(state.getCurrentLocation());
+                    route.add(state.getCurrentLocation());
+                    break;
                 }
-
             }
 
+
+            if (!newNeighbours) {
+                route.remove(route.size()-1);
+                System.out.println("Moving to: " + route.get(route.size()-1));
+                state.moveTo(route.get(route.size()-1));
+            }
+
+            /**
             if (visitedNodes.contains(stack.getFirst())) {
                 stack.pop();
+                state.moveTo(previousNode);
+            } else {
+                previousNode = state.getCurrentLocation();
+                state.moveTo(stack.getFirst());
+                currentNeighboursList.clear();
+                visitedNodes.add(state.getCurrentLocation());
             }
+
 
             System.out.println("Stack contents:");
             for(Long id : stack) {
                 System.out.println(id);
             }
 
-            state.moveTo(stack.getFirst());
-            currentNeighboursList.clear();
-            visitedNodes.add(state.getCurrentLocation());
+
+
+
+
             System.out.println("Visited Nodes: ");
             for (long id : visitedNodes) {
                 System.out.println(id);
             }
-
+            */
 
 
         }
