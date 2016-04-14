@@ -13,16 +13,20 @@ import java.util.Comparator;
 import game.EscapeState;
 import game.ExplorationState;
 import game.NodeStatus;
+import game.Node;
 
 public class Explorer {
 
     private Collection<NodeStatus> currentNeighbours;
     private List<NodeStatus> currentNeighboursList;
-
-    private NodeStatus nearestNode;
     private Set<Long> visitedNodes;
     private List<Long> route;
-    private int dtt;
+
+    private Collection<Node> escapeMap;
+    private Collection<Node> escapeNeighbours;
+    private List<Node> escapeNeighboursList;
+    private Set<Node> visitedEscapeNodes;
+    private List<Node> escapeRoute;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -56,9 +60,6 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
 
-        Deque<Long> stack = new ArrayDeque<>();
-        stack.push(state.getCurrentLocation());
-        Long previousNode = null;
         currentNeighboursList = new ArrayList<>();
         visitedNodes = new HashSet<>();
         route = new ArrayList<>();
@@ -75,6 +76,7 @@ public class Explorer {
                 currentNeighboursList.add(tempNode);
             }
 
+            //sort the list of neighbours by whichever is nearest the orb
             Collections.sort(currentNeighboursList, new Comparator<NodeStatus>() {
                 public int compare (NodeStatus o1, NodeStatus o2) {
                     if (o1.getDistanceToTarget() == o2.getDistanceToTarget()) {
@@ -86,7 +88,8 @@ public class Explorer {
             });
 
             //just checking that they are actually sorted
-            //sorted by id value, not by distance!
+            //sorted by id value, not by distance! don't think the
+            //sorting is working correctly yet
             for (NodeStatus ns : currentNeighboursList) {
                 System.out.print(ns.getId() + ", ");
             }
@@ -110,34 +113,6 @@ public class Explorer {
                 System.out.println("Moving to: " + route.get(route.size()-1));
                 state.moveTo(route.get(route.size()-1));
             }
-
-            /**
-            if (visitedNodes.contains(stack.getFirst())) {
-                stack.pop();
-                state.moveTo(previousNode);
-            } else {
-                previousNode = state.getCurrentLocation();
-                state.moveTo(stack.getFirst());
-                currentNeighboursList.clear();
-                visitedNodes.add(state.getCurrentLocation());
-            }
-
-
-            System.out.println("Stack contents:");
-            for(Long id : stack) {
-                System.out.println(id);
-            }
-
-
-
-
-
-            System.out.println("Visited Nodes: ");
-            for (long id : visitedNodes) {
-                System.out.println(id);
-            }
-            */
-
 
         }
     }
@@ -167,31 +142,97 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
-    }
 
+        escapeMap = state.getVertices();
+        escapeNeighboursList = new ArrayList<>();
+        visitedEscapeNodes = new HashSet<>();
+        escapeRoute = new ArrayList<>();
 
-    //This method doesn't work because sometimes you have to move into spaces that aren't nearer
-    private void returnNearest(List<NodeStatus> lns, NodeStatus ns) {
-        Collections.sort(lns);
-        for (NodeStatus tempNode : lns) {
-            System.out.println(tempNode.getDistanceToTarget());
-        }
-        System.out.println("...");
-        boolean match = false;
+        visitedEscapeNodes.add(state.getCurrentNode());
+        escapeRoute.add(state.getCurrentNode());
 
-        for (NodeStatus tempNode : lns) {
-            if (visitedNodes.contains(tempNode.getId())) {
-                lns.remove(tempNode);
-            } else  if (ns.getDistanceToTarget() > tempNode.getDistanceToTarget()) {
-                nearestNode = tempNode;
-                match = true;
+        Node exitNode = state.getExit();
+
+        while(!state.getCurrentNode().equals(exitNode)) {
+
+            escapeNeighbours = state.getCurrentNode().getNeighbours();
+
+            escapeNeighboursList.addAll(escapeNeighbours);
+
+            //need to pick up gold if present
+            if(state.getCurrentNode().getTile().getGold() != 0) {
+                state.pickUpGold();
             }
+
+            boolean newNeighbours = false;
+            for (Node n : escapeNeighboursList) {
+                if (!visitedEscapeNodes.contains(n)) {
+                    newNeighbours = true;
+                    state.moveTo(n);
+                    escapeNeighboursList.clear();
+                    visitedEscapeNodes.add(state.getCurrentNode());
+                    escapeRoute.add(state.getCurrentNode());
+                    break;
+                }
+            }
+
+            if (!newNeighbours) {
+                escapeRoute.remove(escapeRoute.size()-1);
+                System.out.println("Moving to: " + escapeRoute.get(escapeRoute.size()-1).getId());
+                state.moveTo(escapeRoute.get(escapeRoute.size()-1));
+            }
+
         }
 
-        if(!match) {
-            nearestNode = lns.get(0);
+
+        while(state.getCurrentNode().equals(exitNode)) {
+            state.moveTo(escapeRoute.get(escapeRoute.size()-1));
         }
 
+        /**
+        System.out.println("Escape Map: ");
+        for (Node n : escapeMap) {
+            System.out.println(n.getId());
+        }
+         */
+
+        /**
+         * Return your current location in the graph.
+         */
+        //public Node getCurrentNode();
+
+        /**
+         * Return the exit from the cavern.
+         * This is the node you need to move to in order to escape.
+         */
+        //public Node getExit();
+
+        /**
+         * Return all the nodes in the graph, in no particular order.
+         */
+        //public Collection<Node> getVertices();
+
+        /**
+         * Change your current location n.
+         * Throw an IllegalArgumentException if n is not a neihgbor of your current location.
+         */
+        //public void moveTo(Node n);
+
+        /**
+         * Picks up any gold on the current tile.
+         * You must first check that there is gold before picking it up.
+         * <p>
+         * Throw an IllegalStateException if there is no gold at the current location,
+         * either because there never was any or because you picked it up already.
+         */
+        //public void pickUpGold();
+
+        /**
+         * Return the time remaining to escape from the cavern.
+         * This value changes with every call to moveTo(Node),
+         * and if it reaches 0 before you escape, you have failed to escape.
+         */
+        //public int getTimeRemaining();
     }
 
 
