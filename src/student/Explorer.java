@@ -14,6 +14,7 @@ import game.EscapeState;
 import game.ExplorationState;
 import game.NodeStatus;
 import game.Node;
+import game.Edge;
 
 public class Explorer {
 
@@ -27,6 +28,9 @@ public class Explorer {
     private List<Node> escapeNeighboursList;
     private Set<Node> visitedEscapeNodes;
     private List<Node> escapeRoute;
+
+    //delete if necessary
+    private Node saveNode;
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -90,10 +94,12 @@ public class Explorer {
             //just checking that they are actually sorted
             //sorted by id value, not by distance! don't think the
             //sorting is working correctly yet
+            /**
             for (NodeStatus ns : currentNeighboursList) {
                 System.out.print(ns.getId() + ", ");
             }
             System.out.println(" ");
+             */
 
             boolean newNeighbours = false;
             for (NodeStatus ns : currentNeighboursList) {
@@ -112,6 +118,11 @@ public class Explorer {
                 route.remove(route.size()-1);
                 System.out.println("Moving to: " + route.get(route.size()-1));
                 state.moveTo(route.get(route.size()-1));
+            }
+
+            System.out.println("Route so far:");
+            for (Long l : route) {
+                System.out.println(l);
             }
 
         }
@@ -141,9 +152,16 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        //TODO: Escape from the cavern before time runs out
+
+        System.out.println("Escape Stage: ");
+
+        //delete if necessarry
+
 
         escapeMap = state.getVertices();
+        for (Node n : escapeMap) {
+            System.out.println(n.getId());
+        }
         escapeNeighboursList = new ArrayList<>();
         visitedEscapeNodes = new HashSet<>();
         escapeRoute = new ArrayList<>();
@@ -152,12 +170,19 @@ public class Explorer {
         escapeRoute.add(state.getCurrentNode());
 
         Node exitNode = state.getExit();
+        System.out.println("Escape nodes id: " + exitNode.getId());
+        //exitNode.getEdge()
 
         while(!state.getCurrentNode().equals(exitNode)) {
 
             escapeNeighbours = state.getCurrentNode().getNeighbours();
 
             escapeNeighboursList.addAll(escapeNeighbours);
+
+            //delete if necessary
+            if (state.getCurrentNode().getId() == 1541) {
+                saveNode = state.getCurrentNode();
+            }
 
             //need to pick up gold if present
             if(state.getCurrentNode().getTile().getGold() != 0) {
@@ -182,12 +207,42 @@ public class Explorer {
                 state.moveTo(escapeRoute.get(escapeRoute.size()-1));
             }
 
+            System.out.println("Exit route so far:");
+            for (Node n : escapeRoute) {
+                System.out.println(n.getId());
+            }
+
+        }
+
+        Set<Node> l1 = state.getCurrentNode().getNeighbours();
+        List<Node> secondLast = new ArrayList<>();
+        secondLast.addAll(l1);
+        Node check2 = secondLast.get(0);
+        state.moveTo(check2);
+
+        state.moveTo(saveNode);
+
+        Edge ege = check2.getEdge(saveNode);
+        System.out.println("Edge length is: " + ege.length());
+        System.out.println("Edge source is: " + ege.getSource().getId());
+        System.out.println("Edge destination is: " + ege.getDest().getId());
+
+        Set<Edge> exits = saveNode.getExits();
+        int testInt = 0;
+        for (Edge e : exits) {
+            testInt++;
+            System.out.println(testInt);
+            System.out.println("Edge length is: " + e.length());
+            System.out.println("Edge source is: " + e.getSource().getId());
+            System.out.println("Edge destination is: " + e.getDest().getId());
         }
 
 
+        /**
         while(state.getCurrentNode().equals(exitNode)) {
             state.moveTo(escapeRoute.get(escapeRoute.size()-1));
         }
+        */
 
         /**
         System.out.println("Escape Map: ");
