@@ -155,6 +155,10 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
 
+        //Starting again
+
+
+        /**
         System.out.println("Escape Stage: ");
 
         //delete if necessarry
@@ -275,6 +279,8 @@ public class Explorer {
             goldRoute.remove(goldRoute.size()-1);
             state.moveTo(goldRoute.get(goldRoute.size()-1));
         }
+         */
+        //
 
         /**
         escapeNeighbours = state.getCurrentNode().getNeighbours();
