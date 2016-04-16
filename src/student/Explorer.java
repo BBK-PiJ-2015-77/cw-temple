@@ -9,6 +9,8 @@ import java.util.Deque;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.HashMap;
 
 import game.EscapeState;
 import game.ExplorationState;
@@ -26,6 +28,12 @@ public class Explorer {
     private Collection<Node> escapeMap;
     private Collection<Node> escapeNeighbours;
     private List<Node> escapeNeighboursList;
+
+    private Map<Node, Integer> distance;
+    private Map<Node, Node> predecessors;
+    private Set<Node> settledNodes;
+    private Set<Node> unSettledNodes;
+
     private List<Node> tempEscapeNeighboursList;
     private Set<Node> visitedEscapeNodes;
     private List<Node> escapeRoute;
@@ -157,6 +165,36 @@ public class Explorer {
 
         //Starting again
 
+
+        //stage 2
+
+
+
+        /**
+        while (UnSettledNodes is not empty) {
+            evaluationNode = getNodeWithLowestDistance(UnSettledNodes)
+            remove evaluationNode from UnSettledNodes
+            add evaluationNode to SettledNodes
+            evaluatedNeighbors(evaluationNode)
+        }
+
+        getNodeWithLowestDistance(UnSettledNodes){
+            find the node with the lowest distance in UnSettledNodes and return it
+        }
+
+        evaluatedNeighbors(evaluationNode){
+            Foreach destinationNode which can be reached via an edge from evaluationNode AND which is not in SettledNodes {
+                edgeDistance = getDistance(edge(evaluationNode, destinationNode))
+                newDistance = distance[evaluationNode] + edgeDistance
+                if (distance[destinationNode]  > newDistance) {
+                    distance[destinationNode]  = newDistance
+                    add destinationNode to UnSettledNodes
+                }
+            }
+        }
+         */
+
+        ///////
 
         /**
         System.out.println("Escape Stage: ");
@@ -396,6 +434,95 @@ public class Explorer {
             return false;
         }
     }
+
+    private List<Node> escapePath(EscapeState state) {
+        escapeNeighboursList = new ArrayList<>();
+        visitedEscapeNodes = new HashSet<>();
+        escapeRoute = new ArrayList<>();
+
+        distance = new HashMap<>();
+        settledNodes = new HashSet<>();
+        unSettledNodes = new HashSet<>();
+        predecessors = new HashMap<>();
+
+        escapeMap = state.getVertices();
+
+        Node startNode = state.getCurrentNode();
+        Node exitNode = state.getExit();
+
+        distance.put(startNode,0);
+        unSettledNodes.add(startNode);
+
+        while(unSettledNodes.size() > 0) {
+            //get node with lowest distance
+            Node tempNode = getMin(unSettledNodes);
+
+            if(tempNode.equals(exitNode)) {
+                break;
+            }
+            //add to settledNodes
+            settledNodes.add(tempNode);
+            //remove from unSettledNodes
+            unSettledNodes.remove(tempNode);
+            //get neighbour with shortest node?????
+            findMinDistance(tempNode, state);
+        }
+    }
+
+    private void findMinDistance(Node node, EscapeState state) {
+
+        escapeNeighboursList = new ArrayList<>();
+
+        escapeNeighbours = state.getCurrentNode().getNeighbours();
+        escapeNeighboursList.addAll(escapeNeighbours);
+        Node currentNode = state.getCurrentNode();
+
+        for (Node n : escapeNeighboursList) {
+            if(getShortestDistance(n) > getShortestDistance(node) + currentNode.getEdge(n)) {
+                distance.put(n, getShortestDistance(node) + currentNode.getEdge(n));
+                predecessors.put(n, node);
+                unSettledNodes.add(n);
+            }
+        }
+    }
+
+    //getShortestDistance
+
+    private Node getMin(Set<Node> nodes) {
+        Node min = null;
+        for (Node n : nodes) {
+            if (min == null) {
+                min = n;
+            } else {
+                if (getShortestDistance(n) < getShortestDistance(min)) {
+                    min = n;
+                }
+            }
+        }
+        return min;
+    }
+
+    private int getShortestDistance(Node destination) {
+        Integer d = distance.get(destination);
+        if (d == null) {
+            return Integer.MAX_VALUE;
+        } else {
+            return d;
+        }
+    }
+
+    /**
+    evaluatedNeighbors(evaluationNode){
+        Foreach destinationNode which can be reached via an edge from evaluationNode AND which is not in SettledNodes {
+            edgeDistance = getDistance(edge(evaluationNode, destinationNode))
+            newDistance = distance[evaluationNode] + edgeDistance
+            if (distance[destinationNode]  > newDistance) {
+                distance[destinationNode]  = newDistance
+                add destinationNode to UnSettledNodes
+            }
+        }
+    }
+    */
 
 
 }
