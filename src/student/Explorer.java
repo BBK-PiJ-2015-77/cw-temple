@@ -26,6 +26,7 @@ public class Explorer {
     private Collection<Node> escapeMap;
     private Collection<Node> escapeNeighbours;
     private List<Node> escapeNeighboursList;
+    private List<Node> tempEscapeNeighboursList;
     private Set<Node> visitedEscapeNodes;
     private List<Node> escapeRoute;
     private List<Node> goldRoute;
@@ -163,6 +164,7 @@ public class Explorer {
         for (Node n : escapeMap) {
             System.out.println(n.getId());
         }
+        tempEscapeNeighboursList = new ArrayList<>();
         escapeNeighboursList = new ArrayList<>();
         visitedEscapeNodes = new HashSet<>();
         escapeRoute = new ArrayList<>();
@@ -180,6 +182,10 @@ public class Explorer {
             escapeNeighbours = state.getCurrentNode().getNeighbours();
 
             escapeNeighboursList.addAll(escapeNeighbours);
+            //any way to sort by shortest path?
+            for (Node n : escapeNeighboursList) {
+                
+            }
 
             //delete if necessary
             if (state.getCurrentNode().getId() == 1541) {
@@ -218,32 +224,42 @@ public class Explorer {
 
         //we've guaranteed we can get to the exit, now can grab as much gold as
         //possible by visiting as many nodes as possible
-        while(state.getTimeRemaining()>0) {
-
+        int timeLeft = state.getTimeRemaining();
+        while(state.getTimeRemaining()> (timeLeft/2)) {
+            goldRoute = new ArrayList<>();
             escapeNeighbours = state.getCurrentNode().getNeighbours();
             escapeNeighboursList.addAll(escapeNeighbours);
             int pathLength = 0;
 
             boolean newNeighbours = false;
             for (Node n : escapeNeighboursList) {
-                if (!visitedEscapeNodes.contains(n)) {
-                    if(((state.getCurrentNode().getEdge(n))*2 + pathLength) <= state.getTimeRemaining()) {
-                        newNeighbours = true;
-                        state.moveTo(n);
-                        escapeNeighboursList.clear();
-                        visitedEscapeNodes.add(state.getCurrentNode());
-                        goldRoute.add(state.getCurrentNode());
-                        break;
-                    }
-
+                //move to a neighbouring node if it hasn't yet been visited
+                //and only if there are enough moves left to make
+                if (!visitedEscapeNodes.contains(n) && checkTime(state,n,pathLength)) {
+                    newNeighbours = true;
+                    pathLength = pathLength + state.getCurrentNode().getEdge(n).length();
+                    state.moveTo(n);
+                    escapeNeighboursList.clear();
+                    visitedEscapeNodes.add(state.getCurrentNode());
+                    goldRoute.add(state.getCurrentNode());
+                    break;
                 }
             }
 
             if(!newNeighbours) {
+                pathLength = pathLength + state.getCurrentNode().getEdge(escapeNeighboursList.get(0)).length();
                 state.moveTo(escapeNeighboursList.get(0));
+                visitedEscapeNodes.add(state.getCurrentNode());
+                goldRoute.add(state.getCurrentNode());
             }
 
 
+        }
+
+        //return to exit
+        while(!state.getCurrentNode().equals(exitNode)) {
+            goldRoute.remove(goldRoute.size()-1);
+            state.moveTo(goldRoute.get(goldRoute.size()-1));
         }
 
         /**
@@ -351,11 +367,15 @@ public class Explorer {
 
     //checks whether there is enough time remaining to make a move to a node
     //and get back
-    private boolean checkTime(EscapeState state) {
-
+    private boolean checkTime(EscapeState state, Node neighbour, int pathLength) {
+        int checkLength = state.getCurrentNode().getEdge(neighbour).length()*2;
+        int lengthConstraint = state.getTimeRemaining();
+        if((checkLength + pathLength)<= lengthConstraint) {
+            return true;
+        } else {
+            return false;
+        }
     }
-
-    // if(((state.getCurrentNode().getEdge(n))*2 + pathLength) <= state.getTimeRemaining()) {
 
 
 }
