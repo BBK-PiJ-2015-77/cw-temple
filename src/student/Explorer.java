@@ -28,6 +28,7 @@ public class Explorer {
     private List<Node> escapeNeighboursList;
     private Set<Node> visitedEscapeNodes;
     private List<Node> escapeRoute;
+    private List<Node> goldRoute;
 
     //delete if necessary
     private Node saveNode;
@@ -173,6 +174,7 @@ public class Explorer {
         System.out.println("Escape nodes id: " + exitNode.getId());
         //exitNode.getEdge()
 
+        //get to the exit
         while(!state.getCurrentNode().equals(exitNode)) {
 
             escapeNeighbours = state.getCurrentNode().getNeighbours();
@@ -214,6 +216,55 @@ public class Explorer {
 
         }
 
+        //we've guaranteed we can get to the exit, now can grab as much gold as
+        //possible by visiting as many nodes as possible
+        while(state.getTimeRemaining()>0) {
+
+            escapeNeighbours = state.getCurrentNode().getNeighbours();
+            escapeNeighboursList.addAll(escapeNeighbours);
+            int pathLength = 0;
+
+            boolean newNeighbours = false;
+            for (Node n : escapeNeighboursList) {
+                if (!visitedEscapeNodes.contains(n)) {
+                    if(((state.getCurrentNode().getEdge(n))*2 + pathLength) <= state.getTimeRemaining()) {
+                        newNeighbours = true;
+                        state.moveTo(n);
+                        escapeNeighboursList.clear();
+                        visitedEscapeNodes.add(state.getCurrentNode());
+                        goldRoute.add(state.getCurrentNode());
+                        break;
+                    }
+
+                }
+            }
+
+            if(!newNeighbours) {
+                state.moveTo(escapeNeighboursList.get(0));
+            }
+
+
+        }
+
+        /**
+        escapeNeighbours = state.getCurrentNode().getNeighbours();
+        escapeNeighboursList.addAll(escapeNeighbours);
+        Node penultimate = escapeNeighboursList.get(0);
+        System.out.println(state.getTimeRemaining());
+
+        if (state.getTimeRemaining()%2 != 0) {
+            state.moveTo(penultimate);
+            escapeNeighboursList.clear();
+            escapeNeighbours = state.getCurrentNode().getNeighbours();
+            escapeNeighboursList.addAll(escapeNeighbours);
+            Node penultimate2 = escapeNeighboursList.get(0);
+            state.moveTo(penultimate2);
+
+        } else {
+            finishMap(state,penultimate,exitNode,state.getTimeRemaining());
+        }
+
+
         Set<Node> l1 = state.getCurrentNode().getNeighbours();
         List<Node> secondLast = new ArrayList<>();
         secondLast.addAll(l1);
@@ -236,6 +287,7 @@ public class Explorer {
             System.out.println("Edge source is: " + e.getSource().getId());
             System.out.println("Edge destination is: " + e.getDest().getId());
         }
+         */
 
 
         /**
@@ -289,6 +341,21 @@ public class Explorer {
          */
         //public int getTimeRemaining();
     }
+
+    private void finishMap(EscapeState state, Node pen, Node fin, int time) {
+        while (time >= 0) {
+            state.moveTo(pen);
+            state.moveTo(fin);
+        }
+    }
+
+    //checks whether there is enough time remaining to make a move to a node
+    //and get back
+    private boolean checkTime(EscapeState state) {
+
+    }
+
+    // if(((state.getCurrentNode().getEdge(n))*2 + pathLength) <= state.getTimeRemaining()) {
 
 
 }
