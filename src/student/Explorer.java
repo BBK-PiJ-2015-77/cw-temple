@@ -180,12 +180,23 @@ public class Explorer {
         while(!state.getCurrentNode().equals(exitNode)) {
 
             escapeNeighbours = state.getCurrentNode().getNeighbours();
-
             escapeNeighboursList.addAll(escapeNeighbours);
-            //any way to sort by shortest path?
+
+            System.out.println("Current Neighbours: ");
             for (Node n : escapeNeighboursList) {
-                
+                System.out.println(n.getId());
             }
+
+            //sort the list of neighbours by whichever is nearest the orb
+            Collections.sort(escapeNeighboursList, new Comparator<Node>() {
+                public int compare (Node o1, Node o2) {
+                    if (state.getCurrentNode().getEdge(o1).length() == state.getCurrentNode().getEdge(o2).length()) {
+                        return 0;
+                    } else {
+                        return state.getCurrentNode().getEdge(o1).length() < state.getCurrentNode().getEdge(o2).length() ? -1 : 1;
+                    }
+                }
+            });
 
             //delete if necessary
             if (state.getCurrentNode().getId() == 1541) {
@@ -213,6 +224,7 @@ public class Explorer {
                 escapeRoute.remove(escapeRoute.size()-1);
                 System.out.println("Moving to: " + escapeRoute.get(escapeRoute.size()-1).getId());
                 state.moveTo(escapeRoute.get(escapeRoute.size()-1));
+                escapeNeighboursList.clear();
             }
 
             System.out.println("Exit route so far:");
@@ -227,6 +239,7 @@ public class Explorer {
         int timeLeft = state.getTimeRemaining();
         while(state.getTimeRemaining()> (timeLeft/2)) {
             goldRoute = new ArrayList<>();
+            goldRoute.add(state.getCurrentNode());
             escapeNeighbours = state.getCurrentNode().getNeighbours();
             escapeNeighboursList.addAll(escapeNeighbours);
             int pathLength = 0;
@@ -249,6 +262,7 @@ public class Explorer {
             if(!newNeighbours) {
                 pathLength = pathLength + state.getCurrentNode().getEdge(escapeNeighboursList.get(0)).length();
                 state.moveTo(escapeNeighboursList.get(0));
+                escapeNeighboursList.clear();
                 visitedEscapeNodes.add(state.getCurrentNode());
                 goldRoute.add(state.getCurrentNode());
             }
