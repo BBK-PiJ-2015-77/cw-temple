@@ -476,6 +476,7 @@ public class Explorer {
         predecessors = new HashMap<>();
 
         escapeMap = state.getVertices();
+        //unSettledNodes.addAll(escapeMap);
 
         Node startNode = state.getCurrentNode();
         Node exitNode = state.getExit();
@@ -495,18 +496,27 @@ public class Explorer {
             settledNodes.add(tempNode);
             unSettledNodes.remove(tempNode);
 
-            escapeNeighbours = state.getCurrentNode().getNeighbours();
+            //Node currentNode = state.getCurrentNode();
+            escapeNeighbours = tempNode.getNeighbours();
             escapeNeighboursList.addAll(escapeNeighbours);
-            Node currentNode = state.getCurrentNode();
 
+
+            System.out.println("NNeighbours:");
             for (Node n : escapeNeighboursList) {
-                double neighbourDist = getShortestDistance(tempNode) + currentNode.getEdge(n).length();
+                System.out.println("Node " + n.getId() + ":");
+                System.out.println(getShortestDistance(tempNode));
+                System.out.println(tempNode.getEdge(n).length());
+                double neighbourDist = getShortestDistance(tempNode) + tempNode.getEdge(n).length();
+                System.out.println("Distance value = " + neighbourDist);
                 if(getShortestDistance(n) > neighbourDist) {
                     distance.put(n, neighbourDist);
                     predecessors.put(n, tempNode);
                     unSettledNodes.add(n);
+
                 }
             }
+
+            escapeNeighboursList.clear();
             ///////////
         }
 
@@ -538,6 +548,7 @@ public class Explorer {
             path.add(step);
         }
         Collections.reverse(path);
+        path.remove(0);
         return path;
 
 
