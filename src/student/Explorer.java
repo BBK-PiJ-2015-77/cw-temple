@@ -26,7 +26,7 @@ public class Explorer {
     private List<Long> route;
 
     private Collection<Node> escapeMap;
-    private Collection<Node> escapeNeighbours;
+    private Set<Node> escapeNeighbours;
     private List<Node> escapeNeighboursList;
 
     private Map<Node, Integer> distance;
@@ -164,6 +164,34 @@ public class Explorer {
     public void escape(EscapeState state) {
 
         //Starting again
+
+        System.out.println("The first node is: " + state.getCurrentNode().getId());
+        System.out.println("The exit node is: " + state.getExit().getId());
+        System.out.println("The neighbours are: ");
+        Set <Node> neighbourNodes = state.getCurrentNode().getNeighbours();
+        for (Node n : neighbourNodes) {
+            System.out.println(n.getId());
+        }
+
+
+        List<Node> path = escapePath(state);
+        System.out.println("Exit check 1\nPath contents:");
+
+        for (Node n : path) {
+            System.out.println(n.getId());
+        }
+
+        if (path != null) {
+            for (Node n : path) {
+                System.out.println("First escape node is: " + n.getId());
+                state.moveTo(n);
+                if(state.getCurrentNode().getTile().getGold() != 0) {
+                    state.pickUpGold();
+                }
+            }
+        } else {
+            System.out.println("Whoops");
+        }
 
 
         //stage 2
@@ -437,8 +465,10 @@ public class Explorer {
 
     private List<Node> escapePath(EscapeState state) {
         escapeNeighboursList = new ArrayList<>();
+
         visitedEscapeNodes = new HashSet<>();
         escapeRoute = new ArrayList<>();
+        List<Node> path = new ArrayList<>();
 
         distance = new HashMap<>();
         settledNodes = new HashSet<>();
@@ -460,13 +490,48 @@ public class Explorer {
             if(tempNode.equals(exitNode)) {
                 break;
             }
-            //add to settledNodes
+
             settledNodes.add(tempNode);
-            //remove from unSettledNodes
             unSettledNodes.remove(tempNode);
-            //get neighbour with shortest node?????
-            findMinDistance(tempNode, state);
+
+            escapeNeighbours = state.getCurrentNode().getNeighbours();
+            escapeNeighboursList.addAll(escapeNeighbours);
+            Node currentNode = state.getCurrentNode();
+
+            for (Node n : escapeNeighboursList) {
+                if(getShortestDistance(n) > getShortestDistance(tempNode) + currentNode.getEdge(n).length()) {
+                    distance.put(n, getShortestDistance(tempNode) + currentNode.getEdge(n).length());
+                    predecessors.put(n, tempNode);
+                    unSettledNodes.add(n);
+                }
+            }
+            ///////////
         }
+
+        //Node current = state.getCurrentNode();
+
+        /**
+        if(predecessors.get(current) == null) {
+            return null;
+        }
+         */
+
+        System.out.println("Pred contents: ");
+        for ()
+        System.out.println("Settled contents: ");
+        System.out.println("Unsettled contents: ");
+
+        Node step = exitNode;
+        path.add(step);
+        while (predecessors.get(step) != null) {
+            step = predecessors.get(step);
+            path.add(step);
+        }
+        Collections.reverse(path);
+        return path;
+
+
+
     }
 
     private void findMinDistance(Node node, EscapeState state) {
@@ -478,8 +543,8 @@ public class Explorer {
         Node currentNode = state.getCurrentNode();
 
         for (Node n : escapeNeighboursList) {
-            if(getShortestDistance(n) > getShortestDistance(node) + currentNode.getEdge(n)) {
-                distance.put(n, getShortestDistance(node) + currentNode.getEdge(n));
+            if(getShortestDistance(n) > getShortestDistance(node) + currentNode.getEdge(n).length()) {
+                distance.put(n, getShortestDistance(node) + currentNode.getEdge(n).length());
                 predecessors.put(n, node);
                 unSettledNodes.add(n);
             }
@@ -509,6 +574,23 @@ public class Explorer {
         } else {
             return d;
         }
+    }
+
+    private List<Node> getPath(Node target) {
+        List<Node> path = new ArrayList<>();
+        Node step = target;
+
+        if(predecessors.get(step) == null) {
+            return null;
+        }
+        path.add(step);
+        while(predecessors.get(step) != null) {
+            step = predecessors.get(step);
+            path.add(step);
+        }
+
+        Collections.reverse(path);
+        return path;
     }
 
     /**
