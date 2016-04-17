@@ -196,6 +196,50 @@ public class Explorer {
 
         //stage 2
 
+        //we've guaranteed we can get to the exit, now can grab as much gold as
+        //possible by visiting as many nodes as possible
+        int timeLeft = state.getTimeRemaining();
+        while(state.getTimeRemaining()> (timeLeft/2)) {
+            goldRoute = new ArrayList<>();
+            goldRoute.add(state.getCurrentNode());
+            escapeNeighbours = state.getCurrentNode().getNeighbours();
+            escapeNeighboursList.addAll(escapeNeighbours);
+            int pathLength = 0;
+
+            boolean newNeighbours = false;
+            for (Node n : escapeNeighboursList) {
+                //move to a neighbouring node if it hasn't yet been visited
+                //and only if there are enough moves left to make
+                if (!visitedEscapeNodes.contains(n) && checkTime(state,n,pathLength)) {
+                    newNeighbours = true;
+                    pathLength = pathLength + state.getCurrentNode().getEdge(n).length();
+                    state.moveTo(n);
+                    escapeNeighboursList.clear();
+                    visitedEscapeNodes.add(state.getCurrentNode());
+                    goldRoute.add(state.getCurrentNode());
+                    break;
+                }
+            }
+
+            if(!newNeighbours) {
+                pathLength = pathLength + state.getCurrentNode().getEdge(escapeNeighboursList.get(0)).length();
+                state.moveTo(escapeNeighboursList.get(0));
+                escapeNeighboursList.clear();
+                visitedEscapeNodes.add(state.getCurrentNode());
+                goldRoute.add(state.getCurrentNode());
+            }
+
+
+        }
+
+        System.out.println("Returning...");
+
+        //return to exit
+        while(!state.getCurrentNode().equals(state.getExit())) {
+            goldRoute.remove(goldRoute.size()-1);
+            //something is going wrong below. indexoutofbounds exception
+            state.moveTo(goldRoute.get(goldRoute.size()-1));
+        }
 
 
         /**
@@ -304,48 +348,7 @@ public class Explorer {
 
         }
 
-        //we've guaranteed we can get to the exit, now can grab as much gold as
-        //possible by visiting as many nodes as possible
-        int timeLeft = state.getTimeRemaining();
-        while(state.getTimeRemaining()> (timeLeft/2)) {
-            goldRoute = new ArrayList<>();
-            goldRoute.add(state.getCurrentNode());
-            escapeNeighbours = state.getCurrentNode().getNeighbours();
-            escapeNeighboursList.addAll(escapeNeighbours);
-            int pathLength = 0;
 
-            boolean newNeighbours = false;
-            for (Node n : escapeNeighboursList) {
-                //move to a neighbouring node if it hasn't yet been visited
-                //and only if there are enough moves left to make
-                if (!visitedEscapeNodes.contains(n) && checkTime(state,n,pathLength)) {
-                    newNeighbours = true;
-                    pathLength = pathLength + state.getCurrentNode().getEdge(n).length();
-                    state.moveTo(n);
-                    escapeNeighboursList.clear();
-                    visitedEscapeNodes.add(state.getCurrentNode());
-                    goldRoute.add(state.getCurrentNode());
-                    break;
-                }
-            }
-
-            if(!newNeighbours) {
-                pathLength = pathLength + state.getCurrentNode().getEdge(escapeNeighboursList.get(0)).length();
-                state.moveTo(escapeNeighboursList.get(0));
-                escapeNeighboursList.clear();
-                visitedEscapeNodes.add(state.getCurrentNode());
-                goldRoute.add(state.getCurrentNode());
-            }
-
-
-        }
-
-        //return to exit
-        while(!state.getCurrentNode().equals(exitNode)) {
-            goldRoute.remove(goldRoute.size()-1);
-            state.moveTo(goldRoute.get(goldRoute.size()-1));
-        }
-         */
         //
 
         /**
@@ -550,7 +553,6 @@ public class Explorer {
         Collections.reverse(path);
         path.remove(0);
         return path;
-
 
 
     }
