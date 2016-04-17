@@ -29,7 +29,7 @@ public class Explorer {
     private Set<Node> escapeNeighbours;
     private List<Node> escapeNeighboursList;
 
-    private Map<Node, Integer> distance;
+    private Map<Node, Double> distance;
     private Map<Node, Node> predecessors;
     private Set<Node> settledNodes;
     private Set<Node> unSettledNodes;
@@ -480,7 +480,8 @@ public class Explorer {
         Node startNode = state.getCurrentNode();
         Node exitNode = state.getExit();
 
-        distance.put(startNode,0);
+        double d = 0.0;
+        distance.put(startNode,d);
         unSettledNodes.add(startNode);
 
         while(unSettledNodes.size() > 0) {
@@ -499,8 +500,9 @@ public class Explorer {
             Node currentNode = state.getCurrentNode();
 
             for (Node n : escapeNeighboursList) {
-                if(getShortestDistance(n) > getShortestDistance(tempNode) + currentNode.getEdge(n).length()) {
-                    distance.put(n, getShortestDistance(tempNode) + currentNode.getEdge(n).length());
+                double neighbourDist = getShortestDistance(tempNode) + currentNode.getEdge(n).length();
+                if(getShortestDistance(n) > neighbourDist) {
+                    distance.put(n, neighbourDist);
                     predecessors.put(n, tempNode);
                     unSettledNodes.add(n);
                 }
@@ -516,10 +518,18 @@ public class Explorer {
         }
          */
 
-        System.out.println("Pred contents: ");
-        for ()
-        System.out.println("Settled contents: ");
-        System.out.println("Unsettled contents: ");
+        System.out.println("Pred size:\n" + predecessors.size());
+        Set<Node> predNodes = predecessors.keySet();
+        System.out.println("Pred contains: ");
+        for (Node n : predNodes) {
+            System.out.println(n.getId());
+        }
+        System.out.println("Settled size:\n" + settledNodes.size());
+        System.out.println("Settled contains: ");
+        for (Node n : settledNodes) {
+            System.out.println(n.getId());
+        }
+        System.out.println("Unsettled size:\n" + unSettledNodes.size());
 
         Node step = exitNode;
         path.add(step);
@@ -534,6 +544,7 @@ public class Explorer {
 
     }
 
+    /**
     private void findMinDistance(Node node, EscapeState state) {
 
         escapeNeighboursList = new ArrayList<>();
@@ -542,14 +553,15 @@ public class Explorer {
         escapeNeighboursList.addAll(escapeNeighbours);
         Node currentNode = state.getCurrentNode();
 
-        for (Node n : escapeNeighboursList) {
-            if(getShortestDistance(n) > getShortestDistance(node) + currentNode.getEdge(n).length()) {
+            for (Node n : escapeNeighboursList) {
+                if(getShortestDistance(n) > getShortestDistance(node) + currentNode.getEdge(n).length()) {
                 distance.put(n, getShortestDistance(node) + currentNode.getEdge(n).length());
                 predecessors.put(n, node);
                 unSettledNodes.add(n);
             }
         }
     }
+     */
 
     //getShortestDistance
 
@@ -567,8 +579,8 @@ public class Explorer {
         return min;
     }
 
-    private int getShortestDistance(Node destination) {
-        Integer d = distance.get(destination);
+    private double getShortestDistance(Node n) {
+        Double d = distance.get(n);
         if (d == null) {
             return Integer.MAX_VALUE;
         } else {
