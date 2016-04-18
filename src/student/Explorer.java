@@ -165,6 +165,9 @@ public class Explorer {
 
         //Starting again
 
+        //delete the following when ready
+        Node checkingExit = null;
+
         System.out.println("The first node is: " + state.getCurrentNode().getId());
         System.out.println("The exit node is: " + state.getExit().getId());
         System.out.println("The neighbours are: ");
@@ -185,9 +188,16 @@ public class Explorer {
             for (Node n : path) {
                 System.out.println("First escape node is: " + n.getId());
                 state.moveTo(n);
-                if(state.getCurrentNode().getTile().getGold() != 0) {
-                    state.pickUpGold();
+
+                //delete the following when ready
+                if (state.getCurrentNode().getId() == 761) {
+                    checkingExit = state.getCurrentNode();
                 }
+                //delete when ready
+                if (checkingExit != null && state.getCurrentNode().getId() == 760) {
+                    System.out.println("Edge between " + state.getCurrentNode().getId() + " and " + checkingExit.getId() + " is: " + state.getCurrentNode().getEdge(checkingExit).length());
+                }
+                pickUpGold(state);
             }
         } else {
             System.out.println("Whoops");
@@ -199,46 +209,100 @@ public class Explorer {
         //we've guaranteed we can get to the exit, now can grab as much gold as
         //possible by visiting as many nodes as possible
         int timeLeft = state.getTimeRemaining();
-        while(state.getTimeRemaining()> (timeLeft/2)) {
-            goldRoute = new ArrayList<>();
-            goldRoute.add(state.getCurrentNode());
+        visitedEscapeNodes = new HashSet<>();
+        visitedEscapeNodes.add(state.getCurrentNode());
+        goldRoute = new ArrayList<>();
+        goldRoute.add(state.getCurrentNode());
+        int pathLength = 0;
+        boolean newNeighbours;
+        boolean validMove;
+
+
+
+        while(state.getTimeRemaining() > (timeLeft/2)) {
+
+
+
             escapeNeighbours = state.getCurrentNode().getNeighbours();
             escapeNeighboursList.addAll(escapeNeighbours);
-            int pathLength = 0;
 
-            boolean newNeighbours = false;
+
+            newNeighbours = false;
+            validMove = false;
             for (Node n : escapeNeighboursList) {
                 //move to a neighbouring node if it hasn't yet been visited
                 //and only if there are enough moves left to make
-                if (!visitedEscapeNodes.contains(n) && checkTime(state,n,pathLength)) {
+                if (!visitedEscapeNodes.contains(n)) {
                     newNeighbours = true;
-                    pathLength = pathLength + state.getCurrentNode().getEdge(n).length();
-                    state.moveTo(n);
-                    escapeNeighboursList.clear();
-                    visitedEscapeNodes.add(state.getCurrentNode());
-                    goldRoute.add(state.getCurrentNode());
-                    break;
+                    if(checkTime(state,n,pathLength)) {
+                        validMove = true;
+                        System.out.println("blah");
+                        pathLength = pathLength + state.getCurrentNode().getEdge(n).length();
+                        System.out.println("Moving to: " + n.getId());
+                        state.moveTo(n);
+                        pickUpGold(state);
+                        escapeNeighboursList.clear();
+                        visitedEscapeNodes.add(state.getCurrentNode());
+                        goldRoute.add(state.getCurrentNode());
+                        break;
+                    }
                 }
             }
 
-            if(!newNeighbours) {
+            if(!newNeighbours && checkTime(state,escapeNeighboursList.get(0),pathLength)) {
+                System.out.println("Error2");
+                System.out.println("Moving to: " + escapeNeighboursList.get(0).getId());
+
+
+                goldRoute.remove(goldRoute.size()-1);
+                pathLength = pathLength - state.getCurrentNode().getEdge(goldRoute.get(goldRoute.size()-1)).length();
+                state.moveTo(goldRoute.get(goldRoute.size()-1));
+                escapeNeighboursList.clear();
+                /**
                 pathLength = pathLength + state.getCurrentNode().getEdge(escapeNeighboursList.get(0)).length();
                 state.moveTo(escapeNeighboursList.get(0));
+                pickUpGold(state);
                 escapeNeighboursList.clear();
-                visitedEscapeNodes.add(state.getCurrentNode());
+                //visitedEscapeNodes.add(state.getCurrentNode());
                 goldRoute.add(state.getCurrentNode());
+                 */
             }
+
+            //If it is not possible to move to a neighbour, without exceeding
+            // half the available time, break out of the while loop
+            /**
+            if(!validMove) {
+                System.out.println("Error1");
+                System.out.println("Path length: " + pathLength);
+                for (Node n : goldRoute) {
+                    System.out.println("Node: " +n.getId());
+                }
+                break;
+            }
+             */
+
+
 
 
         }
 
         System.out.println("Returning...");
+        System.out.println("Current node is: " + state.getCurrentNode().getId());
+        System.out.println("Return path: ");
+
+
+        for (Node n : goldRoute) {
+            System.out.println(n.getId());
+        }
+        System.out.println("Return path length = " + pathLength + " and time remaining is " + state.getTimeRemaining());
 
         //return to exit
         while(!state.getCurrentNode().equals(state.getExit())) {
             goldRoute.remove(goldRoute.size()-1);
             //something is going wrong below. indexoutofbounds exception
             state.moveTo(goldRoute.get(goldRoute.size()-1));
+
+
         }
 
 
@@ -459,10 +523,16 @@ public class Explorer {
     private boolean checkTime(EscapeState state, Node neighbour, int pathLength) {
         int checkLength = state.getCurrentNode().getEdge(neighbour).length()*2;
         int lengthConstraint = state.getTimeRemaining();
-        if((checkLength + pathLength)<= lengthConstraint) {
-            return true;
-        } else {
-            return false;
+
+        boolean result = ((checkLength + pathLength)<= lengthConstraint);
+        System.out.println("I'm at " + state.getCurrentNode().getId() + " looking at " + neighbour.getId() + " and its " + result);
+
+        return ((checkLength + pathLength)<= lengthConstraint);
+    }
+
+    private void pickUpGold(EscapeState state) {
+        if(state.getCurrentNode().getTile().getGold() != 0) {
+            state.pickUpGold();
         }
     }
 
